@@ -25,6 +25,7 @@ var db = new sqlite3.Database(db_filename, sqlite3.OPEN_READONLY, (err) => {
     }
 });
 
+
 function TestSQL(){
     db.all("SELECT * FROM Consumption WHERE year =?", ["2017"], (err,rows) =>{
         //console.log(rows);
