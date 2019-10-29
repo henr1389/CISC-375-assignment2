@@ -180,18 +180,37 @@ app.get('/state/:selected_state', (req, res) => {
     });
 });
 
+
 // GET request handler for '/energy-type/*'
 app.get('/energy-type/:selected_energy_type', (req, res) => {
     ReadFile(path.join(template_dir, 'energy.html')).then((template) => {
+        if(req.params === '/favicon.ico') {
+            console.log('Favicon was requested');
+        }
         let response = template;
         let table;
+        
+        let type = req.params.selected_energy_type; 
+        let imagePath = '/images/energies/'+ type+'.jpg'; 
         // modify `response` here
-       
-        let type = req.params.selected_energy_type;       
-        let imagePath = '/images/energies/'+ type+'.jpg';
         response = response.replace("!!ENERGYTITLE!!", type);
-        console.log(abrStateTable.length);
-        /* for(var i = 0; i<abrStateTable.length; i++){
+        response = response.replace("!!ENERGYHEAD!!", type);
+        response = response.replace("!!ENERGYTYPE!!", type);
+        response = response.replace("'TYPE'", type);
+
+
+
+       /*
+             
+        
+        
+        console.log("why");
+
+
+
+
+
+        for(var i = 0; i<abrStateTable.length; i++){
             console.log(i);
 
             db.all("SELECT coal FROM Consumption WHERE state_abbreviation = ?",abrStateTable[i], (err, rows) => {
@@ -213,7 +232,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         //response = response.replace(/!!ENERGYTYPE!!/g, energyNeatName[type].name);
         //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
         //response = response.replace(/!!ALTENERGYIMAGE!!/g, energyNeatName[type].name+' image')
-        //console.log(response);
+        console.log('response');
         WriteHtml(res, response);
     }).catch((err) => {
         Write404Error(res);
