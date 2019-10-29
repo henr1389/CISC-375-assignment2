@@ -14,6 +14,11 @@ var db_filename = path.join(__dirname, 'db', 'usenergy.sqlite3');
 var app = express();
 var port = 8000;
 
+var abrStateTable = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",  
+    "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
+    "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
+    "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
+    "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
 // open usenergy.sqlite3 database
 var db = new sqlite3.Database(db_filename, sqlite3.OPEN_READONLY, (err) => {
     if (err) {
@@ -68,7 +73,7 @@ app.get('/', (req, res) => {
             response = response.toString().replace('!!RENEWABLECOUNT!!', rows[0].renewable);
             */
             db.each("SELECT [state_abbreviation], [coal], [natural_gas], [nuclear], [petroleum], [renewable] FROM Consumption WHERE [year] = '2017' ORDER BY [state_abbreviation]", (err, row) => {
-                console.log(row);
+                //console.log(row);
                 table += "<tr>";
                 for(var j = 0; j < row.length; j++){
                     table += "<td>" + row[j] + "</td>";
@@ -78,9 +83,9 @@ app.get('/', (req, res) => {
                 if(err) {
                     console.log("Unable to to select with .each");
                 }
-                console.log("Table has " + data + " rows");
+                //console.log("Table has " + data + " rows");
                 response = response.toString().replace('!!TABLEBODY!!', table);
-                console.log(response);
+                //console.log(response);
                 WriteHtml(res, response);
             });
         });
@@ -179,14 +184,36 @@ app.get('/state/:selected_state', (req, res) => {
 app.get('/energy-type/:selected_energy_type', (req, res) => {
     ReadFile(path.join(template_dir, 'energy.html')).then((template) => {
         let response = template;
+        let table;
         // modify `response` here
-        let type = req.params.selected_energy_type;
-        let imagePath = '/images/energies/'+ type+'.jpg'; 
-        response = response.replace(/!!!energy_type!!/g, type); 
+       
+        let type = req.params.selected_energy_type;       
+        let imagePath = '/images/energies/'+ type+'.jpg';
+        response = response.replace("!!ENERGYTITLE!!", type);
+        console.log(abrStateTable.length);
+        /* for(var i = 0; i<abrStateTable.length; i++){
+            console.log(i);
+
+            db.all("SELECT coal FROM Consumption WHERE state_abbreviation = ?",abrStateTable[i], (err, rows) => {
+            //console.log(rows);
+            });
+        
+        }
+        console.log("teet");
+        db.all("SELECT coal FROM Consumption WHERE state_abbreviation = ?","AK", (err, rows) => {
+            //console.log(rows);
+        });
+        //response = responce.replace("!!ENNERGYCOUNT!!", "{AK: [5], AL: [6], AR: [7]}");
+        //energy_type = "coal";
+        */
+
+
+        //response = response.replace(/!!!energy_type!!/g, type); 
         //response = response.replace(/!!ENERGYHEAD!!/g,energyNeatName[type].name);
         //response = response.replace(/!!ENERGYTYPE!!/g, energyNeatName[type].name);
-        response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
+        //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
         //response = response.replace(/!!ALTENERGYIMAGE!!/g, energyNeatName[type].name+' image')
+        //console.log(response);
         WriteHtml(res, response);
     }).catch((err) => {
         Write404Error(res);
