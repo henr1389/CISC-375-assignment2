@@ -47,21 +47,23 @@ app.get('/', (req, res) => {
             let gas = 0;
             let nuclear = 0;
             let petroleum = 0;
-            let renewable = 0; 
+            let renewable = 0;
+            //get total counts for each energy 
             for (var i = 0; i < rows.length; i++){
-                
                 coal += rows[i]['coal'];  
                 gas += rows[i]['natural_gas'];
                 nuclear += rows[i]['nuclear']; 
                 petroleum += rows[i]['petroleum'];
                 renewable += rows[i]['renewable'];
             }
-            response = response.replace('!!COALCOUNT!!', coal);
-            response = response.replace('!!GASCOUNT!!', gas);
-            response = response.replace('!!NUCLEARCOUNT!!', nuclear);
-            response = response.replace('!!PETROLEUMCOUNT!!', petroleum);
-            response = response.replace('!!RENEWABLECOUNT!!', renewable);
+            //Dynamically populate the JavaScript variables in the index.html template
+            response = response.replace(/!!COALCOUNT!!/g, coal);
+            response = response.replace(/!!GASCOUNT!!/g, gas);
+            response = response.replace(/!!NUCLEARCOUNT!!/g, nuclear);
+            response = response.replace(/!!PETROLEUMCOUNT!!/g, petroleum);
+            response = response.replace(/!!RENEWABLECOUNT!!/g, renewable);
 
+            //Dynamically populate the body of the table in the index.html template with proper state consumptions
             for (var j = 0; j < rows.length; j++){
                 tableValues += '<tr>'; 
                 tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
@@ -72,9 +74,9 @@ app.get('/', (req, res) => {
                 tableValues += '<td>' + rows[j]['renewable'] + '</td>';
                 tableValues += '</tr>'
             }
-                response = response.toString().replace('!!TABLEBODY!!', tableValues);
-                console.log(response);
-                WriteHtml(res, response);
+            response = response.toString().replace('!!TABLEBODY!!', tableValues);
+            console.log(response);
+            WriteHtml(res, response);
         });
     
     }).catch((err) => {
@@ -84,18 +86,55 @@ app.get('/', (req, res) => {
 
 // GET request handler for '/year/*'
 app.get('/year/:selected_year', (req, res) => {
-    ReadFile(path.join(template_dir, 'year.html')).then((template) => {
-        let response = template;
-        // modify `response` here
-        var year = req.params.selected_year;
-        db.all("SELECT * FROM Consumption WHERE year = '" + year + "'", (err,rows) =>{
+    let selectYear = req.params.selected_year;
+    let year = parseInt(selectYear);
+    if (year <= 2017 && year >= 1960){
+        ReadFile(path.join(template_dir, 'year.html')).then((template) => {
+            let response = template;
+            // modify `response` here
+        
+            db.all("SELECT * FROM Consumption WHERE year =?", [year], (err,rows) =>{
+                let tableValues = "";
+                let coal = 0;
+                let gas = 0;
+                let nuclear = 0;
+                let petroleum = 0;
+                let renewable = 0;
+                for (var i = 0; i < rows.length; i++){
+                    coal += rows[i]['coal'];  
+                    gas += rows[i]['natural_gas'];
+                    nuclear += rows[i]['nuclear']; 
+                    petroleum += rows[i]['petroleum'];
+                    renewable += rows[i]['renewable'];
+                }
+                response = response.replace(/!!COALCOUNT!!/g, coal);
+                response = response.replace(/!!GASCOUNT!!/g, gas);
+                response = response.replace(/!!NUCLEARCOUNT!!/g, nuclear);
+                response = response.replace(/!!PETROLEUMCOUNT!!/g, petroleum);
+                response = response.replace(/!!RENEWABLECOUNT!!/g, renewable);
 
-
+                for (var j = 0; j < rows.length; j++){
+                    tableValues += '<tr>'; 
+                    tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
+                    tableValues += '<td>' + rows[j]['coal'] + '</td>';
+                    tableValues += '<td>' + rows[j]['natural_gas'] + '</td>';
+                    tableValues += '<td>' + rows[j]['nuclear'] + '</td>';
+                    tableValues += '<td>' + rows[j]['petroleum'] + '</td>';
+                    tableValues += '<td>' + rows[j]['renewable'] + '</td>';
+                    tableValues += '</tr>'
+                }
+                response = response.toString().replace('!!YEARTABLE!!', tableValues);
+                console.log(response);
+                WriteHtml(res, response);
+            });
+        
+        }).catch((err) => {
+            Write404Error(res);
         });
-        WriteHtml(res, response);
-    }).catch((err) => {
-        Write404Error(res);
-    });
+    }
+    else{
+
+    }
 });
 
 // GET request handler for '/state/*'
@@ -108,9 +147,6 @@ app.get('/state/:selected_state', (req, res) => {
         response = response.replace(/!!STATE!!/g, stateAbbriviation); 
         response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
         response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + stateAbbriviation + ' image'); 
-
-        //response = response.replace(/!!PrevStateAbbr!!/g, statePrevNext[stateAbbrName].prev);
-        //response = response.replace(/!!NextStateAbbr!!/g, statePrevNext[stateAbbrName].next);
         var stateName = new Promise((resolve, reject) => {
             db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", stateAbbriviation, (err, row) => {
                     let fullName = row.state_name;
@@ -127,22 +163,22 @@ app.get('/state/:selected_state', (req, res) => {
                 for(var k = 0; k < rows.length; k++){
                     row = rows[i];
                     table += '<tr>';
-                    for(var column of Object.keys(row)){
-                        if(column !== 'state_abbreviation') {
-                            table += '<td>' + row[column] + '</td>';
-                            result += row[column];
-                        }
-                    }
-                    table += '<td>' + total + '</td>';
-                    table += '</tr>';
+                    //for(var column of Object.keys(row)){
+                        //if(column !== 'state_abbreviation') {
+                          //  table += '<td>' + row[column] + '</td>';
+                          //  result += row[column];
+                       // }
+                   // }
+                   // table += '<td>' + total + '</td>';
+                   // table += '</tr>';
                 }
                 response = response.replace('!!STATETABLE!!', table);
                 
-                let coalCounts = [];
-                let naturalGasCounts = [];
-                let nuclearCounts = [];
-                let petroleumCounts = [];
-                let renewableCounts = [];
+                let coal = [];
+                let naturalGas = [];
+                let nuclear = [];
+                let petroleum = [];
+                let renewable = [];
                 let rowVar;
                 for(var i = 0; i < rows.length; i++){
                     rowVar = rows[i];
@@ -152,10 +188,10 @@ app.get('/state/:selected_state', (req, res) => {
                     petroleumCounts.push(rowVar.petroleum);
                     renewableCounts.push(rowVar.renewable);
                 }
-                response = response.replace('!!COALCOUNTS!!', coalCounts);
-                response = response.replace('!!GASCOUNTS!!', naturalGasCounts);
-                response = response.replace('!!NUCLEARCOUNTS!!', nuclearCounts);
-                response = response.replace('!!PETROLEUMCOUNTS!!', petroleumCounts);
+                response = response.replace(/!!COALCOUNTS!!/g, coalCounts);
+                response = response.replace(/!!GASCOUNTS!!/g, naturalGasCounts);
+                response = response.replace(/!!NUCLEARCOUNTS!!/g, nuclearCounts);
+                response = response.replace(/!!PETROLEUMCOUNTS!!/g, petroleumCounts);
                 resolve();
             });
         });
@@ -175,10 +211,10 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         let type = req.params.selected_energy_type;
         let imagePath = '/images/energies/'+ type+'.jpg'; 
         response = response.replace(/!!!energy_type!!/g, type); 
-        //response = response.replace(/!!ENERGYHEAD!!/g,energyNeatName[type].name);
-        //response = response.replace(/!!ENERGYTYPE!!/g, energyNeatName[type].name);
+        //response = response.replace(/!!ENERGYHEAD!!/g,energy[type].name);
+        //response = response.replace(/!!ENERGYTYPE!!/g, energy[type].name);
         response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
-        //response = response.replace(/!!ALTENERGYIMAGE!!/g, energyNeatName[type].name+' image')
+        //response = response.replace(/!!ALTENERGYIMAGE!!/g, [type].name+' image')
         WriteHtml(res, response);
     }).catch((err) => {
         Write404Error(res);
