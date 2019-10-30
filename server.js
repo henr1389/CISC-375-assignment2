@@ -205,6 +205,29 @@ app.get('/state/:selected_state', (req, res) => {
         response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
         //response = response.replace(/!!PREVIOUSSTATE!!/g,   );
         //response = response.replace(/!!NEXTSTATE!!/g, )    ;
+        stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",  
+        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
+        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
+        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
+        "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
+        var position = stateAbrev.indexOf(selectedState);
+        if(position == 0){
+            response = response.replace("!!PREVIOUSSTATE!!", "WY");
+            response = response.replace("!!!PREVIOUSSTATE!!", "WY");
+            response = response.replace("!!NEXTSTATE!!", "AL");
+            response = response.replace("!!!NEXTSTATE!!", "AL");
+        }else if(position==50){
+            response = response.replace("!!PREVIOUSSTATE!!", "WV");
+            response = response.replace("!!!PREVIOUSSTATE!!", "WV");
+            response = response.replace("!!NEXTSTATE!!", "AK");
+            response = response.replace("!!!NEXTSTATE!!", "Ak");
+        }else{
+            response = response.replace("!!PREVIOUSSTATE!!", stateAbrev[position-1]);
+            response = response.replace("!!!PREVIOUSSTATE!!", stateAbrev[position-1]);
+            response = response.replace("!!NEXTSTATE!!", stateAbrev[position+1]);
+            response = response.replace("!!!NEXTSTATE!!", stateAbrev[position+1]);
+        }
+
 
         db.all("SELECT * FROM Consumption WHERE state_abbreviation = ?", [selectedState], (err, rows) => {
             let tableValues = '';
