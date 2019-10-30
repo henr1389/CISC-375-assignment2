@@ -1,3 +1,34 @@
+/*
+PACKAGE.JSON
+Fill out the author and contributors sections in package.json (author should be whoever's GitHub account is used to host the code, contributors should be all group members)
+Fill out the URL of the repository
+Ensure all used modules downloaded via NPM are in the dependencies object
+HOME PAGE -> DONE
+Dynamically populate the JavaScript variables in the index.html template with proper US totals for energy consumption of each energy source
+Dynamically populate the body of the table in the index.html template with proper state consumptions for each energy source
+YEAR PAGE -> DONE
+Dynamically populate the <h2> header in the year.html template to include the specific year being viewed
+Dynamically populate the JavaScript variables in the year.html template with proper US totals for energy consumption of each energy source
+Dynamically populate the body of the table in the year.html template with proper state consumptions for each energy source (including total of all 5)
+STATE PAGE
+Dynamically populate the <h2> header in the state.html template to include the two character abbreviation of the specific state being viewed
+Dynamically populate the JavaScript variables in the state.html template with an array of energy consumption per year for each energy source
+Dynamically populate the body of the table in the state.html template with proper yearly consumptions for each energy source (including total of all 5)
+Replace <img> src from '/images/noimage.jpg' to some other image representative of states (e.g. a map of the US). Also change the alt attribute appropriately.
+ENERGY SOURCE PAGE
+Dynamically populate the <h2> header in the energy.html template to include the type of the energy being viewed
+Dynamically populate the JavaScript variables in the energy.html template with a JS Object of energy consumption per year per state
+Dynamically populate the body of the table in the energy.html template with proper yearly consumptions for each state (including total of all 51 - counting Washington DC)
+Replace <img> src from '/images/noimage.jpg' to some other image representative of energy (e.g. a lightning bolt icon). Also change the alt attribute appropriately.
+EARN 3 ADDITIONAL POINTS FOR EACH ITEM COMPLETED BELOW
+Dynamically populate 'previous' and 'next' links in the year.html, state.html, and energy.html templates
+Dynamically populate the <h2> header of the state.html template to include the full name (rather than abbreviation) of the specific state being viewed
+Send a proper 404 error if the requested year, state, or energy source does not exist in the database
+Can be plain text, but should be customized to the request (e.g. "Error: no data for state FB", or "Error: no data for year 2019")
+Create a set of images (one for each state, and one for each energy source). Dynamically populate the <img> src and alt in the state.html and energy.html templates.
+Make sure that you do not infringe copyrights - either create your own images, or find royalty free images and follow any stipulations the creators provide (e.g. citing where you got the image on your page)
+*/
+
 // Built-in Node.js modules
 var fs = require('fs')
 var path = require('path')
@@ -88,11 +119,16 @@ app.get('/', (req, res) => {
 app.get('/year/:selected_year', (req, res) => {
     let selectYear = req.params.selected_year;
     let year = parseInt(selectYear);
-    if (year <= 2017 && year >= 1960){
+    if (year >= 2017 && year <= 1960){
+        res.writeHead(404, {'Content-Type': 'text/plain'});
+        res.write('Error: ' + year + 'not in range');
+        res.end();
+    }
+    else{
         ReadFile(path.join(template_dir, 'year.html')).then((template) => {
             let response = template;
             // modify `response` here
-        
+            response = response.replace(/!!CURRENTYEAR!!/g, year);
             db.all("SELECT * FROM Consumption WHERE year =?", [year], (err,rows) =>{
                 let tableValues = "";
                 let coal = 0;
@@ -100,6 +136,8 @@ app.get('/year/:selected_year', (req, res) => {
                 let nuclear = 0;
                 let petroleum = 0;
                 let renewable = 0;
+                let nextYear;
+                let previousYear;
                 for (var i = 0; i < rows.length; i++){
                     coal += rows[i]['coal'];  
                     gas += rows[i]['natural_gas'];
@@ -123,81 +161,90 @@ app.get('/year/:selected_year', (req, res) => {
                     tableValues += '<td>' + rows[j]['renewable'] + '</td>';
                     tableValues += '</tr>'
                 }
-                response = response.toString().replace('!!YEARTABLE!!', tableValues);
+                response = response.toString().replace(/!!YEARTABLE!!/g, tableValues);
+                if(year == 1960){
+                    previousYear = year;
+                    nextYear = year + 1;
+                }
+                else if(year == 2017){
+                    previousYear = year - 1;
+                    nextYear = year;
+                }
+                else{
+                    previousYear = year - 1;
+                    nextYear = year + 1;
+                }
+                response = response.replace(/!!PREVIOUSYEAR!!/g, previousYear);
+                response = response.replace(/!!NEXTYEAR!!/g, nextYear);
                 console.log(response);
                 WriteHtml(res, response);
             });
-        
         }).catch((err) => {
             Write404Error(res);
         });
-    }
-    else{
-
     }
 });
 
 // GET request handler for '/state/*'
 app.get('/state/:selected_state', (req, res) => {
-    let stateAbbriviation = req.params.selected_state;
+    let selectedState = req.params.selected_state;
+    let nextState;
+    let previousState;
+
     ReadFile(path.join(template_dir, 'state.html')).then((template) => {
         let response = template;
         // modify `response` here
-        let imagePath = '/images/states/'+stateAbbriviation+'.jpg'; 
-        response = response.replace(/!!STATE!!/g, stateAbbriviation); 
+        let imagePath = '/images/states/' + selectedState + '.jpg'; 
+        response = response.replace(/!!STATENAME!!/g, selectedState); 
         response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
-        response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + stateAbbriviation + ' image'); 
-        var stateName = new Promise((resolve, reject) => {
-            db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", stateAbbriviation, (err, row) => {
-                    let fullName = row.state_name;
-                    response = response.replace('!!STATE!!', fullName);
-                    resolve();
-            });
-        });
-        var stateConsumption = new Promise((resolve, reject) => {
-            db.all("SELECT * FROM Consumption WHERE state_abbreviation = ?", stateAbbriviation, (err, rows) => {
-                //console.log(rows);
-                let table = '';
-                let row;
-                let result = 0;
-                for(var k = 0; k < rows.length; k++){
-                    row = rows[i];
-                    table += '<tr>';
-                    //for(var column of Object.keys(row)){
-                        //if(column !== 'state_abbreviation') {
-                          //  table += '<td>' + row[column] + '</td>';
-                          //  result += row[column];
-                       // }
-                   // }
-                   // table += '<td>' + total + '</td>';
-                   // table += '</tr>';
+        response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
+        //response = response.replace(/!!PREVIOUSSTATE!!/g,   );
+        //response = response.replace(/!!NEXTSTATE!!/g, )    ;
+
+        db.all("SELECT * FROM Consumption WHERE state_abbreviation = ?", [selectedState], (err, rows) => {
+            let tableValues = '';
+            let coal = [];
+            let naturalGas = [];
+            let nuclear = [];
+            let petroleum = [];
+            let renewable = [];
+            let index;
+            let total;
+            let position;
+            for(let i = 0; i < rows.length; i++){
+                index = rows[i];
+                total = 0;
+                tableValues += '<tr>';
+                for(let column of Object.keys(index)){
+                    if(column !== 'state_abbreviation') {
+                        tableValues += '<td>' + index[column] + '</td>';
+                        total += index[column];
+                    }
                 }
-                response = response.replace('!!STATETABLE!!', table);
-                
-                let coal = [];
-                let naturalGas = [];
-                let nuclear = [];
-                let petroleum = [];
-                let renewable = [];
-                let rowVar;
-                for(var i = 0; i < rows.length; i++){
-                    rowVar = rows[i];
-                    coalCounts.push(rowVar.coal);
-                    naturalGasCounts.push(rowVar.natural_gas);
-                    nuclearCounts.push(rowVar.nuclear); //math.abs()
-                    petroleumCounts.push(rowVar.petroleum);
-                    renewableCounts.push(rowVar.renewable);
-                }
-                response = response.replace(/!!COALCOUNTS!!/g, coalCounts);
-                response = response.replace(/!!GASCOUNTS!!/g, naturalGasCounts);
-                response = response.replace(/!!NUCLEARCOUNTS!!/g, nuclearCounts);
-                response = response.replace(/!!PETROLEUMCOUNTS!!/g, petroleumCounts);
-                resolve();
+                tableValues += '<td>' + total + '</td>';
+                tableValues += '</tr>';
+            }
+            response = response.replace('!!STATETABLE!!', tableValues);    
+
+            for(var i = 0; i < rows.length; i++){
+                position = rows[i];
+                coal.push(position.coal);
+                naturalGas.push(position.natural_gas);
+                nuclear.push(position.nuclear); 
+                petroleum.push(position.petroleum);
+                renewable.push(position.renewable);
+            }
+            response = response.replace(/!!COALCOUNTS!!/g, coal);
+            response = response.replace(/!!GASCOUNTS!!/g, naturalGas);
+            response = response.replace(/!!NUCLEARCOUNTS!!/g, nuclear);
+            response = response.replace(/!!PETROLEUMCOUNTS!!/g, petroleum);
+            console.log(response);
+            db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", [selectedState], (err, data) => {
+                let fullName = data.state_name;
+                response = response.replace(/!!STATE!!/g, fullName);
             });
-        });
-        Promise.all([stateNamePromise, stateConsumptionPromise]).then((data) => {
             WriteHtml(res, response);
-        })
+        });
     }).catch((err) => {
         Write404Error(res);
     });
@@ -211,10 +258,10 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         let type = req.params.selected_energy_type;
         let imagePath = '/images/energies/'+ type+'.jpg'; 
         response = response.replace(/!!!energy_type!!/g, type); 
-        //response = response.replace(/!!ENERGYHEAD!!/g,energy[type].name);
-        //response = response.replace(/!!ENERGYTYPE!!/g, energy[type].name);
+        //response = response.replace(/!!ENERGYHEAD!!/g, );
+        //response = response.replace(/!!ENERGYTYPE!!/g, );
         response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
-        //response = response.replace(/!!ALTENERGYIMAGE!!/g, [type].name+' image')
+        //response = response.replace(/!!ALTENERGYIMAGE!!/g, ' image')
         WriteHtml(res, response);
     }).catch((err) => {
         Write404Error(res);
