@@ -148,7 +148,10 @@ app.get('/year/:selected_year', (req, res) => {
                 let renewable = 0;
                 let nextYear;
                 let previousYear;
+                let total = 0;
+                let index;
                 for (var i = 0; i < rows.length; i++){
+                    index = rows[i];
                     coal += rows[i]['coal'];  
                     gas += rows[i]['natural_gas'];
                     nuclear += rows[i]['nuclear']; 
@@ -169,7 +172,10 @@ app.get('/year/:selected_year', (req, res) => {
                     tableValues += '<td>' + rows[j]['nuclear'] + '</td>';
                     tableValues += '<td>' + rows[j]['petroleum'] + '</td>';
                     tableValues += '<td>' + rows[j]['renewable'] + '</td>';
+                    total = rows[j]['coal'] + rows[j]['natural_gas'] + rows[j]['nuclear'] +  rows[j]['petroleum'] + rows[j]['renewable'];
+                    tableValues += '<td>' + total + '</td>';
                     tableValues += '</tr>'
+                    total = 0;
                 }
                 response = response.toString().replace(/!!YEARTABLE!!/g, tableValues);
                 if(year == 1960){
