@@ -22,7 +22,7 @@
 <body onload="Init()">
     <div id="wrapper">
         <div id="content">
-            <a href="/"><h1>US Energy Consumption</h1></a>
+            <a href="/"><h1>!!CURRENTYEAR!! US Energy Consumption</h1></a>
             
             <div class="spacer2"></div>
             
@@ -45,11 +45,11 @@
 
             <div>
                 <div class="left">
-                    <h2>National Snapshot</h2> <!-- change title to include year (e.g. 1999 US Energy Consumption) -->
+                    <h2>!!CURRENTYEAR!! US Energy Consumption</h2> <!-- change title to include year (e.g. 1999 US Energy Consumption) -->
                 </div>
                 <div class="right">
-                    <a class="prev_next" href="">Prev</a> <!-- link to itself if year is 1960 -->
-                    <a class="prev_next" href="">Next</a> <!-- link to itself if year is 2017 -->
+                    <a class="prev_next" href="/year/!!PREVIOUSYEAR!!">Prev</a> <!-- link to itself if year is 1960 -->
+                    <a class="prev_next" href="/year/!!NEXTYEAR!!">Next</a> <!-- link to itself if year is 2017 -->
                 </div>
                 <div class="spacer1"></div>
                 <div id="snapshot"></div>
