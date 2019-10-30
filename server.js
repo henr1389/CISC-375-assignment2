@@ -60,29 +60,21 @@ app.get('/', (req, res) => {
             response = response.replace('!!NUCLEARCOUNT!!', nCount);
             response = response.replace('!!PETROLEUMCOUNT!!', pCount);
             response = response.replace('!!RENEWABLECOUNT!!', rCount);
-            /*
-            response = response.toString().replace('!!COALCOUNT!!', rows[0].coal);
-            response = response.toString().replace('!!GASCOUNT!!', rows[0].natural_gas);
-            response = response.toString().replace('!!NUCLEARCOUNT!!', rows[0].nuclear);
-            response = response.toString().replace('!!PETROLEUMCOUNT!!', rows[0].petroleum);
-            response = response.toString().replace('!!RENEWABLECOUNT!!', rows[0].renewable);
-            */
-            db.each("SELECT [state_abbreviation], [coal], [natural_gas], [nuclear], [petroleum], [renewable] FROM Consumption WHERE [year] = '2017' ORDER BY [state_abbreviation]", (err, row) => {
-                console.log(row);
-                table += "<tr>";
-                for(var j = 0; j < row.length; j++){
-                    table += "<td>" + row[j] + "</td>";
-                }
-                table += "</tr>";
-            }, (err, data) => {
-                if(err) {
-                    console.log("Unable to to select with .each");
-                }
-                console.log("Table has " + data + " rows");
-                response = response.toString().replace('!!TABLEBODY!!', table);
+
+            let tableValues = '';
+            for (var j = 0; j < rows.length; j++){
+                tableValues += '<tr>'; 
+                tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
+                tableValues += '<td>' + rows[j]['coal'] + '</td>';
+                tableValues += '<td>' + rows[j]['natural_gas'] + '</td>';
+                tableValues += '<td>' + rows[j]['nuclear'] + '</td>';
+                tableValues += '<td>' + rows[j]['petroleum'] + '</td>';
+                tableValues += '<td>' + rows[j]['renewable'] + '</td>';
+                tableValues += '</tr>'
+            }
+                response = response.toString().replace('!!TABLEBODY!!', tableValues);
                 console.log(response);
                 WriteHtml(res, response);
-            });
         });
     
     }).catch((err) => {
