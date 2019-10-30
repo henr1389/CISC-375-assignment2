@@ -124,10 +124,21 @@ app.get('/year/:selected_year', (req, res) => {
         res.end();
     }
     else{
+        
         ReadFile(path.join(template_dir, 'year.html')).then((template) => {
             let response = template;
             // modify `response` here
             response = response.replace(/!!CURRENTYEAR!!/g, year);
+            if (year == 1960){
+                response = response.replace("!!PREVIOUSYEAR!!", "1960");
+                response = response.replace("!!NEXTYEAR!!", "1961");
+            }else if(year == 2017){
+            response = response.replace("!!PREVIOUSYEAR!!", "2016");
+               response = response.replace("!!NEXTYEAR!!!", "2017");
+            }else{
+                response = response.replace("!!PREVIOUSYEAR!!", (year-1).toString());
+                response = response.replace("!!NEXTYEAR!!", (year+1).toString());
+            }
             db.all("SELECT * FROM Consumption WHERE year =?", [year], (err,rows) =>{
                 let tableValues = "";
                 let coal = 0;
