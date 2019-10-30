@@ -42,26 +42,26 @@ app.get('/', (req, res) => {
         // modify `response` here
         db.all("SELECT * FROM Consumption WHERE year =?", ["2017"], (err,rows) =>{
             var table = "";
-            let cCount = 0;
-            let gCount = 0;
-            let nCount = 0;
-            let pCount = 0;
-            let rCount = 0; 
+            let tableValues = "";
+            let coal = 0;
+            let gas = 0;
+            let nuclear = 0;
+            let petroleum = 0;
+            let renewable = 0; 
             for (var i = 0; i < rows.length; i++){
                 
-                cCount += rows[i]['coal'];  
-                gCount += rows[i]['natural_gas'];
-                nCount += rows[i]['nuclear']; 
-                pCount += rows[i]['petroleum'];
-                rCount += rows[i]['renewable'];
+                coal += rows[i]['coal'];  
+                gas += rows[i]['natural_gas'];
+                nuclear += rows[i]['nuclear']; 
+                petroleum += rows[i]['petroleum'];
+                renewable += rows[i]['renewable'];
             }
-            response = response.replace('!!COALCOUNT!!', cCount);
-            response = response.replace('!!GASCOUNT!!', gCount);
-            response = response.replace('!!NUCLEARCOUNT!!', nCount);
-            response = response.replace('!!PETROLEUMCOUNT!!', pCount);
-            response = response.replace('!!RENEWABLECOUNT!!', rCount);
+            response = response.replace('!!COALCOUNT!!', coal);
+            response = response.replace('!!GASCOUNT!!', gas);
+            response = response.replace('!!NUCLEARCOUNT!!', nuclear);
+            response = response.replace('!!PETROLEUMCOUNT!!', petroleum);
+            response = response.replace('!!RENEWABLECOUNT!!', renewable);
 
-            let tableValues = '';
             for (var j = 0; j < rows.length; j++){
                 tableValues += '<tr>'; 
                 tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
