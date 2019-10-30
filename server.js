@@ -56,7 +56,6 @@ var db = new sqlite3.Database(db_filename, sqlite3.OPEN_READONLY, (err) => {
     }
 });
 
-
 function TestSQL(){
     db.all("SELECT * FROM Consumption WHERE year =?", ["2017"], (err,rows) =>{
         //console.log(rows);
@@ -280,8 +279,8 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
             response = response.replace("!!!NEXTENERGY!!", pageArr[position+1]);
             response = response.replace("!!NEXTENERGY!!", pageArr[position+1]);
         }
-        let imagePath = '/images/'+ type+'.jpg'; 
-        response = response.replace("!!ENERGYIMAGE!!", imagePath);
+        let energyImagePath = '/images/'+ type+'.jpg'; 
+        response = response.replace("!!ENERGYIMAGE!!", energyImagePath);
         response = response.replace("!!ALTENERGYIMAGE!!", "picture of "+type);
         response = response.replace("!!ENERGYTITLE!!", type);
         response = response.replace("!!ENERGYHEAD!!", type);
