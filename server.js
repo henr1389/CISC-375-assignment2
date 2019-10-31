@@ -213,8 +213,6 @@ app.get('/state/:selected_state', (req, res) => {
         response = response.replace(/!!STATENAME!!/g, selectedState); 
         response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
         response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
-        //response = response.replace(/!!PREVIOUSSTATE!!/g,   );
-        //response = response.replace(/!!NEXTSTATE!!/g, )    ;
         stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", 
         "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
         "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
@@ -278,8 +276,10 @@ app.get('/state/:selected_state', (req, res) => {
             response = response.replace(/!!PETROLEUMCOUNTS!!/g, petroleum);
             console.log(response);
             db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", [selectedState], (err, data) => {
-                let fullName = data.state_name;
-                response = response.replace(/!!STATE!!/g, fullName);
+                if(data != null){
+                    let fullName = data.state_name;
+                    response = response.replace(/!!STATE!!/g, fullName);
+                }
             });
             WriteHtml(res, response);
         });
