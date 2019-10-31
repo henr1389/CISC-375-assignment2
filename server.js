@@ -209,7 +209,7 @@ app.get('/state/:selected_state', (req, res) => {
     ReadFile(path.join(template_dir, 'state.html')).then((template) => {
         let response = template;
         // modify `response` here
-        let imagePath = '/images/states/' + selectedState + '.jpg'; 
+        let imagePath = '/images/pics/' + selectedState + '.jpg'; 
         response = response.replace(/!!STATENAME!!/g, selectedState); 
         response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
         response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
