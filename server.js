@@ -392,7 +392,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
                 statesTotal += "}";
 
                 response = response.replace("!!ENNERGYCOUNT!!", statesTotal);
-                console.log(response);
+                //console.log(response);
                 res();
             });
         });
@@ -425,7 +425,6 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
     Promise.all([newPromise, nextPromise]).then(function(){
         WriteHtml(res, response);
 });
-    console.log("after write");
 
     }).catch((err) => {
         console.log(err);
