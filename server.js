@@ -78,11 +78,11 @@ app.get('/', (req, res) => {
             let nuclear = 0;
             let petroleum = 0;
             let renewable = 0;
-            //get total counts for each energy 
+            //get total counts for each energy
             for (var i = 0; i < rows.length; i++){
-                coal += rows[i]['coal'];  
+                coal += rows[i]['coal'];
                 gas += rows[i]['natural_gas'];
-                nuclear += rows[i]['nuclear']; 
+                nuclear += rows[i]['nuclear'];
                 petroleum += rows[i]['petroleum'];
                 renewable += rows[i]['renewable'];
             }
@@ -95,7 +95,7 @@ app.get('/', (req, res) => {
 
             //Dynamically populate the body of the table in the index.html template with proper state consumptions
             for (var j = 0; j < rows.length; j++){
-                tableValues += '<tr>'; 
+                tableValues += '<tr>';
                 tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
                 tableValues += '<td>' + rows[j]['coal'] + '</td>';
                 tableValues += '<td>' + rows[j]['natural_gas'] + '</td>';
@@ -108,7 +108,7 @@ app.get('/', (req, res) => {
             console.log(response);
             WriteHtml(res, response);
         });
-    
+
     }).catch((err) => {
         Write404Error(res);
     });
@@ -124,7 +124,7 @@ app.get('/year/:selected_year', (req, res) => {
         res.end();
     }
     else{
-        
+
         ReadFile(path.join(template_dir, 'year.html')).then((template) => {
             let response = template;
             // modify `response` here
@@ -152,9 +152,9 @@ app.get('/year/:selected_year', (req, res) => {
                 let index;
                 for (var i = 0; i < rows.length; i++){
                     index = rows[i];
-                    coal += rows[i]['coal'];  
+                    coal += rows[i]['coal'];
                     gas += rows[i]['natural_gas'];
-                    nuclear += rows[i]['nuclear']; 
+                    nuclear += rows[i]['nuclear'];
                     petroleum += rows[i]['petroleum'];
                     renewable += rows[i]['renewable'];
                 }
@@ -165,7 +165,7 @@ app.get('/year/:selected_year', (req, res) => {
                 response = response.replace(/!!RENEWABLECOUNT!!/g, renewable);
 
                 for (var j = 0; j < rows.length; j++){
-                    tableValues += '<tr>'; 
+                    tableValues += '<tr>';
                     tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
                     tableValues += '<td>' + rows[j]['coal'] + '</td>';
                     tableValues += '<td>' + rows[j]['natural_gas'] + '</td>';
@@ -205,18 +205,18 @@ app.get('/year/:selected_year', (req, res) => {
 app.get('/energy-type/:selected_energy_type', (req, res) => {
     ReadFile(path.join(template_dir, 'energy.html')).then((template) => {
         var response = template;
-        // modify `response` here 
+        // modify `response` here
         let type = req.params.selected_energy_type;
-        let imagePath = '/images/energies/'+ type+'.jpg'; 
-        //response = response.replace(/!!!energy_type!!/g, type); 
+        let imagePath = '/images/energies/'+ type+'.jpg';
+        //response = response.replace(/!!!energy_type!!/g, type);
         //response = response.replace(/!!ENERGYHEAD!!/g, );
         //response = response.replace(/!!ENERGYTYPE!!/g, );
-        //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
+        //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath);
         //response = response.replace(/!!ALTENERGYIMAGE!!/g, ' image')
-        var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",  
-        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
-        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
-        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
+        var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",
+        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",
+        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",
+        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",
         "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
         console.log(stateAbrev.length);
         let pageArr= ["coal","natural_gas", "nuclear","petroleum", "renewable"];
@@ -237,7 +237,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
             response = response.replace("!!!NEXTENERGY!!", pageArr[position+1]);
             response = response.replace("!!NEXTENERGY!!", pageArr[position+1]);
         }
-        let energyImagePath = '/images/'+ type+'.jpg'; 
+        let energyImagePath = '/images/'+ type+'.jpg';
         response = response.replace("!!ENERGYIMAGE!!", energyImagePath);
         response = response.replace("!!ALTENERGYIMAGE!!", "picture of "+type);
         response = response.replace("!!ENERGYTITLE!!", type);
@@ -257,8 +257,8 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
                     currentState++;
                     while(j<=57&& i<rows.length){
                         if (j != 57){
-                            statesTotal += rows[i][type] +", "; 
-                            j++ 
+                            statesTotal += rows[i][type] +", ";
+                            j++
                             i++
                         }else{
                             statesTotal += rows[i][type];
@@ -270,19 +270,19 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
                     }else{
                         statesTotal += "], ";
                     }
-                    
-                    
+
+
                 }
                 statesTotal += "}";
-                
+
                 response = response.replace("!!ENNERGYCOUNT!!", statesTotal);
                 console.log(response);
                 res();
-            });    
+            });
         });
         let newPromise = new Promise (function(res,rej) {
             db.all("SELECT "+ type.toString() +" FROM Consumption Where year ORDER BY year, state_abbreviation",  (err, rows) => {
-            
+
             for (let i = 0; i<rows.length; i++){
                 let j = 0;
                 table += "<tr>";
@@ -290,13 +290,13 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
                 while(j < 51 && i<rows.length){
                     temp = rows[i][type];
                     tempTotal += rows[i][type];
-                    table += "<td>"+temp.toString()+ "</td>";     
-                    
+                    table += "<td>"+temp.toString()+ "</td>";
+
                     j++;
                     if (j!=51){
-                       i++; 
+                       i++;
                     }
-                    
+
                 }
                 table += "<td>"+tempTotal+"</td></tr>";
                 tempYear++;
@@ -320,15 +320,21 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
 // GET request handler for '/energy-type/*'
 app.get('/energy-type/:selected_energy_type', (req, res) => {
     ReadFile(path.join(template_dir, 'energy.html')).then((template) => {
-        let response = template;
-        // modify `response` here 
+        var response = template;
+        // modify `response` here
         let type = req.params.selected_energy_type;
-        let imagePath = '/images/energies/'+ type+'.jpg'; 
-        response = response.replace(/!!!energy_type!!/g, type); 
+        let imagePath = '/images/energies/'+ type+'.jpg';
+        //response = response.replace(/!!!energy_type!!/g, type);
         //response = response.replace(/!!ENERGYHEAD!!/g, );
         //response = response.replace(/!!ENERGYTYPE!!/g, );
-        response = response.replace(/!!ENERGYIMAGE!!/g, imagePath); 
+        //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath);
         //response = response.replace(/!!ALTENERGYIMAGE!!/g, ' image')
+        var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",
+        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",
+        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",
+        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",
+        "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
+        console.log(stateAbrev.length);
         let pageArr= ["coal","natural_gas", "nuclear","petroleum", "renewable"];
         let position = pageArr.indexOf(type);
         if (position == 0){
@@ -347,7 +353,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
             response = response.replace("!!!NEXTENERGY!!", pageArr[position+1]);
             response = response.replace("!!NEXTENERGY!!", pageArr[position+1]);
         }
-        let energyImagePath = '/images/'+ type+'.jpg'; 
+        let energyImagePath = '/images/'+ type+'.jpg';
         response = response.replace("!!ENERGYIMAGE!!", energyImagePath);
         response = response.replace("!!ALTENERGYIMAGE!!", "picture of "+type);
         response = response.replace("!!ENERGYTITLE!!", type);
@@ -357,33 +363,42 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         let temp = "";
         let tempTotal = 0;
         let tempYear = 1960;
-        let energyCount = [];
-        let energyTotal = "";
+        var currentState = 0;
         let nextPromise = new Promise (function(res,rej){
-            var allStatesTotal= "{";
-            /*
-            db.all("SELECT "+ type.toString() +" FROM Consumption Where year ORDER BY  state_abbreviation, year",  (err, rows) => {
-                //console.log(rows);
+            var statesTotal= "{";
+            db.all("SELECT "+ type.toString() +" FROM Consumption ORDER BY  state_abbreviation, year",  (err, rows) => {
                 for (var i = 0; i<rows.length;i++){
                     var j = 0;
-                    allStatesTotal += stateAbrev[i] + ": [";
-                    while(j<51&&i<rows.length){
-                        allStatesTotal += rows[i][type] +", ";
-
+                    statesTotal += stateAbrev[currentState] + ": [";
+                    currentState++;
+                    while(j<=57&& i<rows.length){
+                        if (j != 57){
+                            statesTotal += rows[i][type] +", ";
+                            j++
+                            i++
+                        }else{
+                            statesTotal += rows[i][type];
+                            j++
+                        }
                     }
-                    allStatesTotal += "], "
-                    
-                }
-                allStatesTotal += "}";
-                response = respones.replace("!!ENNERGYCOUNT!!", allStatesTotal);
+                    if(i >= rows.length-1){
+                        statesTotal += "]";
+                    }else{
+                        statesTotal += "], ";
+                    }
 
+
+                }
+                statesTotal += "}";
+
+                response = response.replace("!!ENNERGYCOUNT!!", statesTotal);
+                console.log(response);
                 res();
             });
-*/          res();
         });
         let newPromise = new Promise (function(res,rej) {
             db.all("SELECT "+ type.toString() +" FROM Consumption Where year ORDER BY year, state_abbreviation",  (err, rows) => {
-            //console.log(rows.length);
+
             for (let i = 0; i<rows.length; i++){
                 let j = 0;
                 table += "<tr>";
@@ -391,13 +406,13 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
                 while(j < 51 && i<rows.length){
                     temp = rows[i][type];
                     tempTotal += rows[i][type];
-                    table += "<td>"+temp.toString()+ "</td>";     
-                    
+                    table += "<td>"+temp.toString()+ "</td>";
+
                     j++;
                     if (j!=51){
-                       i++; 
+                       i++;
                     }
-                    
+
                 }
                 table += "<td>"+tempTotal+"</td></tr>";
                 tempYear++;
@@ -405,12 +420,13 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
             }
             response = response.replace("!!ENERGYTABLE!!", table);
             res();
-
         });
     });
     Promise.all([newPromise, nextPromise]).then(function(){
         WriteHtml(res, response);
 });
+    console.log("after write");
+
     }).catch((err) => {
         console.log(err);
         Write404Error(res);
@@ -441,6 +457,8 @@ function WriteHtml(res, html) {
     res.write(html);
     res.end();
 }
+
+
 
 
 var server = app.listen(port);
