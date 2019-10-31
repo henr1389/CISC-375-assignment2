@@ -1,11 +1,6 @@
 /*
-PACKAGE.JSON
-Fill out the author and contributors sections in package.json (author should be whoever's GitHub account is used to host the code, contributors should be all group members)
-Fill out the URL of the repository
-Ensure all used modules downloaded via NPM are in the dependencies object
+PACKAGE.JSON -> DONE
 HOME PAGE -> DONE
-Dynamically populate the JavaScript variables in the index.html template with proper US totals for energy consumption of each energy source
-Dynamically populate the body of the table in the index.html template with proper state consumptions for each energy source
 YEAR PAGE -> DONE
 Dynamically populate the <h2> header in the year.html template to include the specific year being viewed
 Dynamically populate the JavaScript variables in the year.html template with proper US totals for energy consumption of each energy source
@@ -52,16 +47,8 @@ var db = new sqlite3.Database(db_filename, sqlite3.OPEN_READONLY, (err) => {
     }
     else {
         console.log('Now connected to ' + db_filename + '\n');
-        TestSQL();
     }
 });
-
-function TestSQL(){
-    db.all("SELECT * FROM Consumption WHERE year =?", ["2017"], (err,rows) =>{
-        //console.log(rows);
-    });
-}
-
 app.use(express.static(public_dir));
 
 
@@ -85,16 +72,12 @@ app.get('/', (req, res) => {
                 petroleum += rows[i]['petroleum'];
                 renewable += rows[i]['renewable'];
             }
-            for (var i = 0; i<5; i++){
-
-            }
             //Dynamically populate the JavaScript variables in the index.html template
             response = response.replace("!!COALCOUNT!!", coal);
             response = response.replace("!!GASCOUNT!!", gas);
             response = response.replace("!!NUCLEARCOUNT!!", nuclear);
             response = response.replace("!!PETROLEUMCOUNT!!", petroleum);
             response = response.replace("!!RENEWABLECOUNT!!", renewable);
-
             //Dynamically populate the body of the table in the index.html template with proper state consumptions
             for (var j = 0; j < rows.length; j++){
                 tableValues += '<tr>';
@@ -106,11 +89,11 @@ app.get('/', (req, res) => {
                 tableValues += '<td>' + rows[j]['renewable'] + '</td>';
                 tableValues += '</tr>'
             }
+            //replace html TABLEBODY with table values
             response = response.toString().replace('!!TABLEBODY!!', tableValues);
             //console.log(response);
             WriteHtml(res, response);
         });
-
     }).catch((err) => {
         Write404Error(res);
     });
@@ -120,16 +103,17 @@ app.get('/', (req, res) => {
 app.get('/year/:selected_year', (req, res) => {
     let selectYear = req.params.selected_year;
     let year = parseInt(selectYear);
+    //check to make sure year is within the correct range
     if (year >= 2017 && year <= 1960){
         res.writeHead(404, {'Content-Type': 'text/plain'});
         res.write('Error: ' + year + 'not in range');
         res.end();
     }
     else{
-
         ReadFile(path.join(template_dir, 'year.html')).then((template) => {
             let response = template;
             // modify `response` here
+            //set previous and next year buttons
             response = response.replace(/!!CURRENTYEAR!!/g, year);
             if (year == 1960){
                 response = response.replace("!!PREVIOUSYEAR!!", "1960");
@@ -152,6 +136,7 @@ app.get('/year/:selected_year', (req, res) => {
                 let previousYear;
                 let total = 0;
                 let index;
+                //get total counts for energy
                 for (var i = 0; i < rows.length; i++){
                     index = rows[i];
                     coal += rows[i]['coal'];
@@ -160,6 +145,7 @@ app.get('/year/:selected_year', (req, res) => {
                     petroleum += rows[i]['petroleum'];
                     renewable += rows[i]['renewable'];
                 }
+                //assign each energy variable in the html document with its value
                 response = response.replace("!!YEAR!!", year);
                 response = response.replace("!!COALCOUNT!!", coal);
                 response = response.replace("!!GASCOUNT!!", gas);
@@ -167,6 +153,7 @@ app.get('/year/:selected_year', (req, res) => {
                 response = response.replace("!!PETROLEUMCOUNT!!", petroleum);
                 response = response.replace("!!RENEWABLECOUNT!!", renewable);
 
+                //construct tabble string to replace in html document
                 for (var j = 0; j < rows.length; j++){
                     tableValues += '<tr>';
                     tableValues += '<td>' + rows[j]['state_abbreviation'] + '</td>';
@@ -180,6 +167,7 @@ app.get('/year/:selected_year', (req, res) => {
                     tableValues += '</tr>'
                     total = 0;
                 }
+                //replace YEARTABLE in year.html document with tablevalues
                 response = response.toString().replace(/!!YEARTABLE!!/g, tableValues);
                 if(year == 1960){
                     previousYear = year;
@@ -195,7 +183,6 @@ app.get('/year/:selected_year', (req, res) => {
                 }
                 response = response.replace(/!!PREVIOUSYEAR!!/g, previousYear);
                 response = response.replace(/!!NEXTYEAR!!/g, nextYear);
-                //console.log(response);
                 WriteHtml(res, response);
             });
         }).catch((err) => {
@@ -224,23 +211,17 @@ app.get('/state/:selected_state', (req, res) => {
             if(data != null){
                 fullName = data.state_name;
                 response = response.replace("!!STATE!!", fullName);
-                response = response.replace("!!STATE!!", fullName);
                 response = response.replace("!!STATENAME!!", fullName);
-                response = response.replace("!!STATENAME!!", fullName);
-                //response = response.replace(/!!STATE!!/g, fullName);
             }
         });
         // modify `response` here
         let imagePath = '/images/pics/' + selectedState + '.jpg'; 
+        //assign correct images to the states
         response = response.replace(/!!STATENAME!!/g, selectedState); 
         response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
         response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
-        var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", 
-        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
-        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
-        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
-        "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"]; 
         var position = stateAbrev.indexOf(selectedState);
+        //assign the previous and next buttons to the correct states
         if(position == 0){
             response = response.replace("!!PREVIOUSSTATE!!", "WY");
             response = response.replace("!!PREVIOUSSTATE!!", "WY");
@@ -258,9 +239,7 @@ app.get('/state/:selected_state', (req, res) => {
             response = response.replace("!!!NEXTSTATE!!", stateAbrev[position+1]);
         }
 
-
         db.all("SELECT * FROM Consumption WHERE state_abbreviation = ?", [selectedState], (err, rows) => {
-            console.log(rows);
             let tableValues = '';
             var coal = "[";
             var naturalGas = "[";
@@ -270,6 +249,7 @@ app.get('/state/:selected_state', (req, res) => {
             let index;
             let total;
             let position;
+            //fill out tableValues string 
             for(let i = 0; i < rows.length; i++){
                 index = rows[i];
                 total = 0;
@@ -283,10 +263,9 @@ app.get('/state/:selected_state', (req, res) => {
                 tableValues += '<td>' + total + '</td>';
                 tableValues += '</tr>';
             }
+            //replace variable in html document
             response = response.replace('!!STATETABLE!!', tableValues);    
-
             for(var i = 0; i < rows.length; i++){
-                //console.log(rows[i]["coal"]);
                 coal += rows[i]['coal'];
                 naturalGas += rows[i]['natural_gas'];
                 nuclear += rows[i]['nuclear'];
@@ -305,19 +284,12 @@ app.get('/state/:selected_state', (req, res) => {
                     petroleum +=", ";
                     renewable +=", ";
                 }
-                //console.log(coal);
-
             }
-            
             response = response.replace("!!COALCOUNTS!!", coal);
             response = response.replace("!!GASCOUNTS!!", naturalGas);
             response = response.replace("!!NUCLEARCOUNTS!!", nuclear);
             response = response.replace("!!PETROLEUMCOUNTS!!", petroleum);
             response = response.replace("!!RENEWABLECOUNTS!!", renewable);
-
-                
-           // console.log(response);
-            
             WriteHtml(res, response);
         });
     }).catch((err) => {
@@ -342,8 +314,8 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",
         "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",
         "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
-        console.log(stateAbrev.length);
-        
+        //console.log(stateAbrev.length);
+        //correctly assign previous and next buttons for energies
         let position = pageArr.indexOf(type);
         if (position == 0){
             response = response.replace("!!PREVIOUSENERGY_TYPE!!", "renewable");
@@ -362,6 +334,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
             response = response.replace("!!NEXTENERGY!!", pageArr[position+1]);
         }
         let energyImagePath = '/images/pics/'+ type+'.jpg';
+        //assign the correct images for each energy
         response = response.replace("!!ENERGYIMAGE!!", energyImagePath);
         response = response.replace("!!ALTENERGYIMAGE!!", "picture of "+type);
         response = response.replace("!!ENERGYTITLE!!", type);
@@ -374,7 +347,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         let tempYear = 1960;
         var currentState = 0;
         let nextPromise = new Promise (function(res,rej){
-            var statesTotal= "{";
+        var statesTotal= "{";
             db.all("SELECT "+ type.toString() +" FROM Consumption ORDER BY  state_abbreviation, year",  (err, rows) => {
                 for (var i = 0; i<rows.length;i++){
                     var j = 0;
@@ -399,9 +372,8 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
 
                 }
                 statesTotal += "}";
-
                 response = response.replace("!!ENNERGYCOUNT!!", statesTotal);
-                console.log(response);
+                //console.log(response);
                 res();
             });
         });
@@ -434,8 +406,6 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
     Promise.all([newPromise, nextPromise]).then(function(){
         WriteHtml(res, response);
 });
-    console.log("after write");
-
     }).catch((err) => {
         console.log(err);
         Write404Error(res);
@@ -466,8 +436,5 @@ function WriteHtml(res, html) {
     res.write(html);
     res.end();
 }
-
-
-
 
 var server = app.listen(port);
