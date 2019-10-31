@@ -295,11 +295,6 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         // modify `response` here
         let type = req.params.selected_energy_type;
         let imagePath = '/images/energies/'+ type+'.jpg';
-        //response = response.replace(/!!!energy_type!!/g, type);
-        //response = response.replace(/!!ENERGYHEAD!!/g, );
-        //response = response.replace(/!!ENERGYTYPE!!/g, );
-        //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath);
-        //response = response.replace(/!!ALTENERGYIMAGE!!/g, ' image')
         var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",
         "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",
         "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",
