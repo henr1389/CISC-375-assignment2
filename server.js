@@ -278,6 +278,7 @@ app.get('/state/:selected_state', (req, res) => {
             response = response.replace("!!NUCLEARCOUNTS!!", nuclear);
             response = response.replace("!!PETROLEUMCOUNTS!!", petroleum);
             response = response.replace("!!RENEWABLECOUNTS!!", renewable);
+            response = response.replace("!!STATE!!", "\""+ selectedState+ "\"");
             WriteHtml(res, response);
         });
     }).catch((err) => {
