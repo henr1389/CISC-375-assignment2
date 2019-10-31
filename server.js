@@ -85,12 +85,15 @@ app.get('/', (req, res) => {
                 petroleum += rows[i]['petroleum'];
                 renewable += rows[i]['renewable'];
             }
+            for (var i = 0; i<5; i++){
+
+            }
             //Dynamically populate the JavaScript variables in the index.html template
-            response = response.replace(/!!COALCOUNT!!/g, coal);
-            response = response.replace(/!!GASCOUNT!!/g, gas);
-            response = response.replace(/!!NUCLEARCOUNT!!/g, nuclear);
-            response = response.replace(/!!PETROLEUMCOUNT!!/g, petroleum);
-            response = response.replace(/!!RENEWABLECOUNT!!/g, renewable);
+            response = response.replace("!!COALCOUNT!!", coal);
+            response = response.replace("!!GASCOUNT!!", gas);
+            response = response.replace("!!NUCLEARCOUNT!!", nuclear);
+            response = response.replace("!!PETROLEUMCOUNT!!", petroleum);
+            response = response.replace("!!RENEWABLECOUNT!!", renewable);
 
             //Dynamically populate the body of the table in the index.html template with proper state consumptions
             for (var j = 0; j < rows.length; j++){
@@ -104,7 +107,7 @@ app.get('/', (req, res) => {
                 tableValues += '</tr>'
             }
             response = response.toString().replace('!!TABLEBODY!!', tableValues);
-            console.log(response);
+            //console.log(response);
             WriteHtml(res, response);
         });
 
@@ -157,11 +160,12 @@ app.get('/year/:selected_year', (req, res) => {
                     petroleum += rows[i]['petroleum'];
                     renewable += rows[i]['renewable'];
                 }
-                response = response.replace(/!!COALCOUNT!!/g, coal);
-                response = response.replace(/!!GASCOUNT!!/g, gas);
-                response = response.replace(/!!NUCLEARCOUNT!!/g, nuclear);
-                response = response.replace(/!!PETROLEUMCOUNT!!/g, petroleum);
-                response = response.replace(/!!RENEWABLECOUNT!!/g, renewable);
+                response = response.replace("!!YEAR!!", year);
+                response = response.replace("!!COALCOUNT!!", coal);
+                response = response.replace("!!GASCOUNT!!", gas);
+                response = response.replace("!!NUCLEARCOUNT!!", nuclear);
+                response = response.replace("!!PETROLEUMCOUNT!!", petroleum);
+                response = response.replace("!!RENEWABLECOUNT!!", renewable);
 
                 for (var j = 0; j < rows.length; j++){
                     tableValues += '<tr>';
@@ -191,7 +195,7 @@ app.get('/year/:selected_year', (req, res) => {
                 }
                 response = response.replace(/!!PREVIOUSYEAR!!/g, previousYear);
                 response = response.replace(/!!NEXTYEAR!!/g, nextYear);
-                console.log(response);
+                //console.log(response);
                 WriteHtml(res, response);
             });
         }).catch((err) => {
@@ -202,17 +206,36 @@ app.get('/year/:selected_year', (req, res) => {
 
 // GET request handler for '/state/*'
 app.get('/state/:selected_state', (req, res) => {
-    let selectedState = req.params.selected_state;
+    var selectedState = req.params.selected_state;
     let nextState;
     let previousState;
+    var fullName;
+    var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", 
+        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
+        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
+        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
+        "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"]; 
+    if (stateAbrev.indexOf(selectedState)==(-1)){
+        Write404Error(res);
+    }
     ReadFile(path.join(template_dir, 'state.html')).then((template) => {
         let response = template;
+        db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", [selectedState], (err, data) => {
+            if(data != null){
+                fullName = data.state_name;
+                response = response.replace("!!STATE!!", fullName);
+                response = response.replace("!!STATE!!", fullName);
+                response = response.replace("!!STATENAME!!", fullName);
+                response = response.replace("!!STATENAME!!", fullName);
+                //response = response.replace(/!!STATE!!/g, fullName);
+            }
+        });
         // modify `response` here
         let imagePath = '/images/pics/' + selectedState + '.jpg'; 
         response = response.replace(/!!STATENAME!!/g, selectedState); 
         response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
         response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
-        stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", 
+        var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", 
         "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
         "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
         "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
@@ -237,12 +260,13 @@ app.get('/state/:selected_state', (req, res) => {
 
 
         db.all("SELECT * FROM Consumption WHERE state_abbreviation = ?", [selectedState], (err, rows) => {
+            console.log(rows);
             let tableValues = '';
-            let coal = [];
-            let naturalGas = [];
-            let nuclear = [];
-            let petroleum = [];
-            let renewable = [];
+            var coal = "[";
+            var naturalGas = "[";
+            var nuclear = "[";
+            var petroleum = "[";
+            var renewable = "[";
             let index;
             let total;
             let position;
@@ -262,24 +286,38 @@ app.get('/state/:selected_state', (req, res) => {
             response = response.replace('!!STATETABLE!!', tableValues);    
 
             for(var i = 0; i < rows.length; i++){
-                position = rows[i];
-                coal.push(position.coal);
-                naturalGas.push(position.natural_gas);
-                nuclear.push(position.nuclear); 
-                petroleum.push(position.petroleum);
-                renewable.push(position.renewable);
-            }
-            response = response.replace(/!!COALCOUNTS!!/g, coal);
-            response = response.replace(/!!GASCOUNTS!!/g, naturalGas);
-            response = response.replace(/!!NUCLEARCOUNTS!!/g, nuclear);
-            response = response.replace(/!!PETROLEUMCOUNTS!!/g, petroleum);
-            console.log(response);
-            db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", [selectedState], (err, data) => {
-                if(data != null){
-                    let fullName = data.state_name;
-                    response = response.replace(/!!STATE!!/g, fullName);
+                //console.log(rows[i]["coal"]);
+                coal += rows[i]['coal'];
+                naturalGas += rows[i]['natural_gas'];
+                nuclear += rows[i]['nuclear'];
+                petroleum += rows[i]['petroleum'];
+                renewable += rows[i]['renewable'];
+                if (i >= rows.length-1){
+                    coal += "]";
+                    naturalGas +="]";
+                    nuclear +="]";
+                    petroleum +="]";
+                    renewable +="]";
+                }else{
+                    coal += ", ";
+                    naturalGas +=", ";
+                    nuclear +=", ";
+                    petroleum +=", ";
+                    renewable +=", ";
                 }
-            });
+                //console.log(coal);
+
+            }
+            
+            response = response.replace("!!COALCOUNTS!!", coal);
+            response = response.replace("!!GASCOUNTS!!", naturalGas);
+            response = response.replace("!!NUCLEARCOUNTS!!", nuclear);
+            response = response.replace("!!PETROLEUMCOUNTS!!", petroleum);
+            response = response.replace("!!RENEWABLECOUNTS!!", renewable);
+
+                
+           // console.log(response);
+            
             WriteHtml(res, response);
         });
     }).catch((err) => {
@@ -294,6 +332,10 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         var response = template;
         // modify `response` here
         let type = req.params.selected_energy_type;
+        let pageArr= ["coal","natural_gas", "nuclear","petroleum", "renewable"];
+        if (pageArr.indexOf(type)==(-1)){
+            Write404Error(res);
+        }
         let imagePath = '/images/energies/'+ type+'.jpg';
         var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",
         "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",
@@ -301,7 +343,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",
         "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
         console.log(stateAbrev.length);
-        let pageArr= ["coal","natural_gas", "nuclear","petroleum", "renewable"];
+        
         let position = pageArr.indexOf(type);
         if (position == 0){
             response = response.replace("!!PREVIOUSENERGY_TYPE!!", "renewable");
@@ -325,6 +367,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         response = response.replace("!!ENERGYTITLE!!", type);
         response = response.replace("!!ENERGYHEAD!!", type);
         response = response.replace("!!ENERGYTYPE!!", type);
+        response = response.replace("!!TYPE!!", type);
         let table = "";
         let temp = "";
         let tempTotal = 0;
