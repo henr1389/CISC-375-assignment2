@@ -220,17 +220,17 @@ app.get('/state/:selected_state', (req, res) => {
         var position = stateAbrev.indexOf(selectedState);
         if(position == 0){
             response = response.replace("!!PREVIOUSSTATE!!", "WY");
-            response = response.replace("!!!PREVIOUSSTATE!!", "WY");
+            response = response.replace("!!PREVIOUSSTATE!!", "WY");
             response = response.replace("!!NEXTSTATE!!", "AL");
             response = response.replace("!!!NEXTSTATE!!", "AL");
         }else if(position==50){
             response = response.replace("!!PREVIOUSSTATE!!", "WV");
-            response = response.replace("!!!PREVIOUSSTATE!!", "WV");
+            response = response.replace("!!PREVIOUSSTATE!!", "WV");
             response = response.replace("!!NEXTSTATE!!", "AK");
             response = response.replace("!!!NEXTSTATE!!", "Ak");
         }else{
             response = response.replace("!!PREVIOUSSTATE!!", stateAbrev[position-1]);
-            response = response.replace("!!!PREVIOUSSTATE!!", stateAbrev[position-1]);
+            response = response.replace("!!PREVIOUSSTATE!!", stateAbrev[position-1]);
             response = response.replace("!!NEXTSTATE!!", stateAbrev[position+1]);
             response = response.replace("!!!NEXTSTATE!!", stateAbrev[position+1]);
         }
