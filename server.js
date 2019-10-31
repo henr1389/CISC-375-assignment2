@@ -2,26 +2,14 @@
 PACKAGE.JSON -> DONE
 HOME PAGE -> DONE
 YEAR PAGE -> DONE
-Dynamically populate the <h2> header in the year.html template to include the specific year being viewed
-Dynamically populate the JavaScript variables in the year.html template with proper US totals for energy consumption of each energy source
-Dynamically populate the body of the table in the year.html template with proper state consumptions for each energy source (including total of all 5)
-STATE PAGE
-Dynamically populate the <h2> header in the state.html template to include the two character abbreviation of the specific state being viewed
-Dynamically populate the JavaScript variables in the state.html template with an array of energy consumption per year for each energy source
-Dynamically populate the body of the table in the state.html template with proper yearly consumptions for each energy source (including total of all 5)
-Replace <img> src from '/images/noimage.jpg' to some other image representative of states (e.g. a map of the US). Also change the alt attribute appropriately.
-ENERGY SOURCE PAGE
-Dynamically populate the <h2> header in the energy.html template to include the type of the energy being viewed
-Dynamically populate the JavaScript variables in the energy.html template with a JS Object of energy consumption per year per state
-Dynamically populate the body of the table in the energy.html template with proper yearly consumptions for each state (including total of all 51 - counting Washington DC)
-Replace <img> src from '/images/noimage.jpg' to some other image representative of energy (e.g. a lightning bolt icon). Also change the alt attribute appropriately.
+STATE PAGE -> DONE
+ENERGY SOURCE PAGE -> DONE
 EARN 3 ADDITIONAL POINTS FOR EACH ITEM COMPLETED BELOW
-Dynamically populate 'previous' and 'next' links in the year.html, state.html, and energy.html templates
-Dynamically populate the <h2> header of the state.html template to include the full name (rather than abbreviation) of the specific state being viewed
+Dynamically populate 'previous' and 'next' links in the year.html, state.html, and energy.html templates -> DONE
+Dynamically populate the <h2> header of the state.html template to include the full name (rather than abbreviation) of the specific state being viewed -> DONE
 Send a proper 404 error if the requested year, state, or energy source does not exist in the database
 Can be plain text, but should be customized to the request (e.g. "Error: no data for state FB", or "Error: no data for year 2019")
-Create a set of images (one for each state, and one for each energy source). Dynamically populate the <img> src and alt in the state.html and energy.html templates.
-Make sure that you do not infringe copyrights - either create your own images, or find royalty free images and follow any stipulations the creators provide (e.g. citing where you got the image on your page)
+Create a set of images (one for each state, and one for each energy source). Dynamically populate the <img> src and alt in the state.html and energy.html templates. -> DONE
 */
 
 // Built-in Node.js modules
