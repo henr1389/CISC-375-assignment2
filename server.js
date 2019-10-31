@@ -71,7 +71,6 @@ app.get('/', (req, res) => {
         let response = template;
         // modify `response` here
         db.all("SELECT * FROM Consumption WHERE year =?", ["2017"], (err,rows) =>{
-            var table = "";
             let tableValues = "";
             let coal = 0;
             let gas = 0;
