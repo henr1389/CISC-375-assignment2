@@ -324,7 +324,7 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
             response = response.replace("!!!NEXTENERGY!!", pageArr[position+1]);
             response = response.replace("!!NEXTENERGY!!", pageArr[position+1]);
         }
-        let energyImagePath = '/images/'+ type+'.jpg';
+        let energyImagePath = '/images/pics/'+ type+'.jpg';
         response = response.replace("!!ENERGYIMAGE!!", energyImagePath);
         response = response.replace("!!ALTENERGYIMAGE!!", "picture of "+type);
         response = response.replace("!!ENERGYTITLE!!", type);
