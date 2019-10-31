@@ -202,6 +202,94 @@ app.get('/year/:selected_year', (req, res) => {
 });
 
 // GET request handler for '/state/*'
+app.get('/state/:selected_state', (req, res) => {
+    let selectedState = req.params.selected_state;
+    let nextState;
+    let previousState;
+    ReadFile(path.join(template_dir, 'state.html')).then((template) => {
+        let response = template;
+        // modify `response` here
+        let imagePath = '/images/states/' + selectedState + '.jpg'; 
+        response = response.replace(/!!STATENAME!!/g, selectedState); 
+        response = response.replace(/!!STATEIMAGE!!/g, imagePath); 
+        response = response.replace(/!!ALTSTATEIMAGE!!/g, 'State of ' + selectedState + ' image');
+        //response = response.replace(/!!PREVIOUSSTATE!!/g,   );
+        //response = response.replace(/!!NEXTSTATE!!/g, )    ;
+        stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", 
+        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",  
+        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",  
+        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",  
+        "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"]; 
+        var position = stateAbrev.indexOf(selectedState);
+        if(position == 0){
+            response = response.replace("!!PREVIOUSSTATE!!", "WY");
+            response = response.replace("!!!PREVIOUSSTATE!!", "WY");
+            response = response.replace("!!NEXTSTATE!!", "AL");
+            response = response.replace("!!!NEXTSTATE!!", "AL");
+        }else if(position==50){
+            response = response.replace("!!PREVIOUSSTATE!!", "WV");
+            response = response.replace("!!!PREVIOUSSTATE!!", "WV");
+            response = response.replace("!!NEXTSTATE!!", "AK");
+            response = response.replace("!!!NEXTSTATE!!", "Ak");
+        }else{
+            response = response.replace("!!PREVIOUSSTATE!!", stateAbrev[position-1]);
+            response = response.replace("!!!PREVIOUSSTATE!!", stateAbrev[position-1]);
+            response = response.replace("!!NEXTSTATE!!", stateAbrev[position+1]);
+            response = response.replace("!!!NEXTSTATE!!", stateAbrev[position+1]);
+        }
+
+
+        db.all("SELECT * FROM Consumption WHERE state_abbreviation = ?", [selectedState], (err, rows) => {
+            let tableValues = '';
+            let coal = [];
+            let naturalGas = [];
+            let nuclear = [];
+            let petroleum = [];
+            let renewable = [];
+            let index;
+            let total;
+            let position;
+            for(let i = 0; i < rows.length; i++){
+                index = rows[i];
+                total = 0;
+                tableValues += '<tr>';
+                for(let column of Object.keys(index)){
+                    if(column !== 'state_abbreviation') {
+                        tableValues += '<td>' + index[column] + '</td>';
+                        total += index[column];
+                    }
+                }
+                tableValues += '<td>' + total + '</td>';
+                tableValues += '</tr>';
+            }
+            response = response.replace('!!STATETABLE!!', tableValues);    
+
+            for(var i = 0; i < rows.length; i++){
+                position = rows[i];
+                coal.push(position.coal);
+                naturalGas.push(position.natural_gas);
+                nuclear.push(position.nuclear); 
+                petroleum.push(position.petroleum);
+                renewable.push(position.renewable);
+            }
+            response = response.replace(/!!COALCOUNTS!!/g, coal);
+            response = response.replace(/!!GASCOUNTS!!/g, naturalGas);
+            response = response.replace(/!!NUCLEARCOUNTS!!/g, nuclear);
+            response = response.replace(/!!PETROLEUMCOUNTS!!/g, petroleum);
+            console.log(response);
+            db.get("SELECT state_name FROM States WHERE state_abbreviation = ?", [selectedState], (err, data) => {
+                let fullName = data.state_name;
+                response = response.replace(/!!STATE!!/g, fullName);
+            });
+            WriteHtml(res, response);
+        });
+    }).catch((err) => {
+        Write404Error(res);
+    });
+});
+
+    
+// GET request handler for '/energy-type/*'
 app.get('/energy-type/:selected_energy_type', (req, res) => {
     ReadFile(path.join(template_dir, 'energy.html')).then((template) => {
         var response = template;
@@ -310,121 +398,6 @@ app.get('/energy-type/:selected_energy_type', (req, res) => {
         WriteHtml(res, response);
 });
     console.log("after write");
-
-    }).catch((err) => {
-        console.log(err);
-        Write404Error(res);
-    });
-});
-
-// GET request handler for '/energy-type/*'
-app.get('/energy-type/:selected_energy_type', (req, res) => {
-    ReadFile(path.join(template_dir, 'energy.html')).then((template) => {
-        var response = template;
-        // modify `response` here
-        let type = req.params.selected_energy_type;
-        let imagePath = '/images/energies/'+ type+'.jpg';
-        //response = response.replace(/!!!energy_type!!/g, type);
-        //response = response.replace(/!!ENERGYHEAD!!/g, );
-        //response = response.replace(/!!ENERGYTYPE!!/g, );
-        //response = response.replace(/!!ENERGYIMAGE!!/g, imagePath);
-        //response = response.replace(/!!ALTENERGYIMAGE!!/g, ' image')
-        var stateAbrev = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC",
-        "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA",
-        "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE",
-        "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC",
-        "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"];
-        console.log(stateAbrev.length);
-        let pageArr= ["coal","natural_gas", "nuclear","petroleum", "renewable"];
-        let position = pageArr.indexOf(type);
-        if (position == 0){
-            response = response.replace("!!PREVIOUSENERGY_TYPE!!", "renewable");
-            response = response.replace("!!PREVIOUSENERGY!!", "Renewable");
-            response = response.replace("!!!NEXTENERGY!!", "natural_gas");
-            response = response.replace("!!NEXTENERGY!!", "Natural Gas");
-        }else if(position == 4){
-            response = response.replace("!!PREVIOUSENERGY_TYPE!!", "petroleum");
-            response = response.replace("!!PREVIOUSENERGY!!", "Petroleum");
-            response = response.replace("!!!NEXTENERGY!!", "coal");
-            response = response.replace("!!NEXTENERGY!!", "Coal");
-        }else{
-            response = response.replace("!!PREVIOUSENERGY_TYPE!!", pageArr[position-1]);
-            response = response.replace("!!PREVIOUSENERGY!!", pageArr[position-1]);
-            response = response.replace("!!!NEXTENERGY!!", pageArr[position+1]);
-            response = response.replace("!!NEXTENERGY!!", pageArr[position+1]);
-        }
-        let energyImagePath = '/images/'+ type+'.jpg';
-        response = response.replace("!!ENERGYIMAGE!!", energyImagePath);
-        response = response.replace("!!ALTENERGYIMAGE!!", "picture of "+type);
-        response = response.replace("!!ENERGYTITLE!!", type);
-        response = response.replace("!!ENERGYHEAD!!", type);
-        response = response.replace("!!ENERGYTYPE!!", type);
-        let table = "";
-        let temp = "";
-        let tempTotal = 0;
-        let tempYear = 1960;
-        var currentState = 0;
-        let nextPromise = new Promise (function(res,rej){
-            var statesTotal= "{";
-            db.all("SELECT "+ type.toString() +" FROM Consumption ORDER BY  state_abbreviation, year",  (err, rows) => {
-                for (var i = 0; i<rows.length;i++){
-                    var j = 0;
-                    statesTotal += stateAbrev[currentState] + ": [";
-                    currentState++;
-                    while(j<=57&& i<rows.length){
-                        if (j != 57){
-                            statesTotal += rows[i][type] +", ";
-                            j++
-                            i++
-                        }else{
-                            statesTotal += rows[i][type];
-                            j++
-                        }
-                    }
-                    if(i >= rows.length-1){
-                        statesTotal += "]";
-                    }else{
-                        statesTotal += "], ";
-                    }
-
-
-                }
-                statesTotal += "}";
-
-                response = response.replace("!!ENNERGYCOUNT!!", statesTotal);
-                //console.log(response);
-                res();
-            });
-        });
-        let newPromise = new Promise (function(res,rej) {
-            db.all("SELECT "+ type.toString() +" FROM Consumption Where year ORDER BY year, state_abbreviation",  (err, rows) => {
-
-            for (let i = 0; i<rows.length; i++){
-                let j = 0;
-                table += "<tr>";
-                table += "<td>"+(tempYear)+"</td>";
-                while(j < 51 && i<rows.length){
-                    temp = rows[i][type];
-                    tempTotal += rows[i][type];
-                    table += "<td>"+temp.toString()+ "</td>";
-
-                    j++;
-                    if (j!=51){
-                       i++;
-                    }
-
-                }
-                table += "<td>"+tempTotal+"</td></tr>";
-                tempYear++;
-                tempTotal = 0;
-            }
-            response = response.replace("!!ENERGYTABLE!!", table);
-            res();
-        });
-    });
-    Promise.all([newPromise, nextPromise]).then(function(){
-        WriteHtml(res, response);
-});
 
     }).catch((err) => {
         console.log(err);
